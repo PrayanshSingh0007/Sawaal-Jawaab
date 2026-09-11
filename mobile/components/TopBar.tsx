@@ -23,7 +23,6 @@ export function TopBar({
         alignItems: 'center',
         gap: space[3],
         minHeight: 68,
-        marginBottom: space[3],
       }}
     >
       <IconButton

@@ -40,8 +40,10 @@ export default function History() {
   }, [exchanges, query])
 
   return (
-    <Screen bottomInset={TAB_BAR_HEIGHT}>
-      <TopBar title="History" onBack={() => router.replace('/(tabs)')} backLabel="Back to Ask" />
+    <Screen
+      bottomInset={TAB_BAR_HEIGHT}
+      header={<TopBar title="History" onBack={() => router.replace('/(tabs)')} backLabel="Back to Ask" />}
+    >
       <View style={{ gap: space[5] }}>
         {exchanges.length > 0 ? (
           <View

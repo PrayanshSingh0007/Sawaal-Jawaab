@@ -29,8 +29,9 @@ export default function Understand() {
 
   if (!reply) {
     return (
-      <Screen bottomInset={TAB_BAR_HEIGHT}>
-        <TopBar title="Their reply" />
+      <Screen bottomInset={TAB_BAR_HEIGHT}
+        header={<TopBar title="Their reply" />}
+      >
         <EmptyState
           icon="ask"
           title="No reply yet"
@@ -49,8 +50,7 @@ export default function Understand() {
   const plain = understood?.simple ?? reply
 
   return (
-    <Screen bottomInset={TAB_BAR_HEIGHT}>
-      <TopBar title="Their reply" />
+    <Screen bottomInset={TAB_BAR_HEIGHT} header={<TopBar title="Their reply" />}>
       <View style={{ gap: space[6] }}>
         {understood?.action ? (
           <ActionChip text={understood.action} />

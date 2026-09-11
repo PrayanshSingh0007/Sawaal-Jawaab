@@ -78,8 +78,12 @@ function PackCard({
 /** Ready-made phrases for the places people actually go. Works offline. */
 export default function Packs() {
   return (
-    <Screen bottomInset={TAB_BAR_HEIGHT}>
-      <TopBar title="Situation packs" onBack={() => router.replace('/(tabs)')} backLabel="Back to Ask" />
+    <Screen
+      bottomInset={TAB_BAR_HEIGHT}
+      header={
+        <TopBar title="Situation packs" onBack={() => router.replace('/(tabs)')} backLabel="Back to Ask" />
+      }
+    >
       <View style={{ gap: space[5] }}>
         <T variant="body" color="muted" style={{ maxWidth: 380 }}>
           Phrases you can show straight away. All of them work with no internet.

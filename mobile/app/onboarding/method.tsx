@@ -18,8 +18,9 @@ const OPTIONS: Array<{ value: InputMethod; icon: string; title: string; subtitle
 export default function Method() {
   const { settings, update } = useApp()
   return (
-    <Screen>
-      <TopBar backLabel="Back to start" />
+    <Screen
+      header={<TopBar backLabel="Back to start" />}
+    >
       <View style={{ gap: space[6] }}>
         <View style={{ gap: space[3] }}>
           <T variant="eyebrow" color="muted">

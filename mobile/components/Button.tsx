@@ -6,7 +6,7 @@ import { useApp } from '../state/AppState'
 import { T } from './Type'
 import { Icon } from './Icon'
 
-type Variant = 'dark' | 'accent' | 'ghost' | 'quiet'
+type Variant = 'dark' | 'accent' | 'ghost' | 'quiet' | 'night'
 type Size = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps {
@@ -70,7 +70,7 @@ export function Button({
     ? color.ink2
     : variant === 'accent'
       ? '#FFFFFF'
-      : variant === 'dark'
+      : variant === 'dark' || variant === 'night'
         ? '#F7F4F0'
         : variant === 'quiet'
           ? color.ink2
@@ -160,6 +160,12 @@ function surfaceFor(
       }
     case 'accent':
       return { boxShadow: pressed ? 'none' : elevation.hot }
+    case 'night':
+      // Translucent on the emergency surface, so the ground shows through.
+      return {
+        backgroundColor: pressed ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.10)',
+        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.24)',
+      }
     case 'quiet':
       return { backgroundColor: pressed ? 'rgba(26,23,20,0.05)' : 'transparent' }
     default:

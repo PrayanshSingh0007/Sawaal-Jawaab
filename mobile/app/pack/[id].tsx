@@ -22,8 +22,7 @@ export default function PackDetail() {
 
   if (!pack) {
     return (
-      <Screen>
-        <TopBar title="Pack" onBack={() => router.replace('/packs')} />
+      <Screen header={<TopBar title="Pack" onBack={() => router.replace('/packs')} />}>
         <EmptyState
           icon="packs"
           title="Pack not found"
@@ -39,8 +38,9 @@ export default function PackDetail() {
   }
 
   return (
-    <Screen>
-      <TopBar title={pack.title} backLabel="Back to packs" />
+    <Screen
+      header={<TopBar title={pack.title} backLabel="Back to packs" />}
+    >
       <View style={{ gap: space[5] }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space[4] }}>
           <View

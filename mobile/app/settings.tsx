@@ -25,8 +25,9 @@ export default function SettingsScreen() {
   const langLabel = LANGUAGES.find((l) => l.code === settings.language)?.native ?? 'English'
 
   return (
-    <Screen>
-      <TopBar title="Settings" backLabel="Back" />
+    <Screen
+      header={<TopBar title="Settings" backLabel="Back" />}
+    >
       <View style={{ gap: space[5] }}>
         <Group title="Reading">
           <View style={{ paddingHorizontal: space[5], paddingBottom: space[5], gap: space[4] }}>

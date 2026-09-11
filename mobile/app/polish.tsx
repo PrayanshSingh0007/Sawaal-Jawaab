@@ -54,8 +54,9 @@ export default function Polish() {
   }, [])
 
   return (
-    <Screen>
-      <TopBar title="Check it" />
+    <Screen
+      header={<TopBar title="Check it" />}
+    >
       <View style={{ gap: space[6] }}>
         <View style={{ gap: space[3] }}>
           <T variant="display">What do you want to say?</T>

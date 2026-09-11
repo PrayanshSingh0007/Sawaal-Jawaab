@@ -83,8 +83,9 @@ export default function Practice() {
 
   if (!situation) {
     return (
-      <Screen>
-        <TopBar title="Practice" />
+      <Screen
+        header={<TopBar title="Practice" />}
+      >
         <View style={{ gap: space[6] }}>
           <View style={{ gap: space[3] }}>
             <T variant="display">Practise before you go</T>
@@ -112,15 +113,19 @@ export default function Practice() {
   const label = SITUATIONS.find((s) => s.id === situation)?.title ?? 'Practice'
 
   return (
-    <Screen scroll={false}>
-      <TopBar
-        title={label}
-        onBack={() => setSituation(null)}
-        backLabel="Choose another situation"
-        right={
-          <IconButton icon="replay" label="Start this conversation again" onPress={() => begin(situation)} />
-        }
-      />
+    <Screen
+      scroll={false}
+      header={
+        <TopBar
+          title={label}
+          onBack={() => setSituation(null)}
+          backLabel="Choose another situation"
+          right={
+            <IconButton icon="replay" label="Start this conversation again" onPress={() => begin(situation)} />
+          }
+        />
+      }
+    >
 
       <ScrollView
         ref={list}

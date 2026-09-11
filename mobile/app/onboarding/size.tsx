@@ -69,8 +69,9 @@ export default function TextSize() {
   const current = SIZES.find((s) => s.value === settings.textScale)
 
   return (
-    <Screen>
-      <TopBar backLabel="Back" />
+    <Screen
+      header={<TopBar backLabel="Back" />}
+    >
       <View style={{ gap: space[6] }}>
         <View style={{ gap: space[3] }}>
           <T variant="eyebrow" color="muted">

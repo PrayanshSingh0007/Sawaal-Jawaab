@@ -35,12 +35,14 @@ export default function Symbols() {
   const countOf = (id: string) => picked.filter((p) => p.id === id).length
 
   return (
-    <Screen>
-      <TopBar
-        title="Tap pictures"
-        right={<IconButton icon="keyboard" label="Type instead" onPress={() => router.back()} />}
-      />
-
+    <Screen
+      header={
+        <TopBar
+          title="Tap pictures"
+          right={<IconButton icon="keyboard" label="Type instead" onPress={() => router.back()} />}
+        />
+      }
+    >
       <View style={{ gap: space[5] }}>
         <View style={{ gap: space[3] }}>
           <T variant="eyebrow" color="muted">

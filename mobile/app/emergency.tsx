@@ -8,6 +8,7 @@ import { color, radius as R, space, TAP } from '../theme/tokens'
 import { useApp } from '../state/AppState'
 import { readProfile, writeProfile } from '../lib/store'
 import { Button, IconButton } from '../components/Button'
+import { Glass } from '../components/Glass'
 import { Sheet } from '../components/Sheet'
 import { Well } from '../components/Well'
 import { T } from '../components/Type'
@@ -157,7 +158,10 @@ export default function Emergency() {
 
         <View style={{ flex: 1 }} />
 
-        <View style={{ gap: space[3] }}>
+        {/* The actions sit on their own pane of dark glass, so they read as a
+            fixed control surface rather than as more of the card above. */}
+        <Glass radius={R.sheet} tint="dark" style={{ padding: space[4] }}>
+          <View style={{ gap: space[3] }}>
           <Button
             variant="accent"
             size="lg"
@@ -171,14 +175,7 @@ export default function Emergency() {
             {profile?.contactPhone ? `Call ${profile.contactName || 'contact'}` : 'Add a number to call'}
           </Button>
 
-          <Button
-            variant="ghost"
-            size="lg"
-            block
-            icon="location"
-            onPress={() => void findPlace()}
-            style={{ backgroundColor: 'rgba(255,255,255,0.1)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.24)' }}
-          >
+          <Button variant="night" size="lg" block icon="location" onPress={() => void findPlace()}>
             {placeState === 'finding' ? 'Finding you…' : 'Share location'}
           </Button>
 
@@ -194,14 +191,15 @@ export default function Emergency() {
           ) : null}
 
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: space[3], minHeight: TAP }}>
-            <Button variant="quiet" size="sm" icon="edit" onPress={() => setEditing(true)}>
+            <Button variant="night" size="sm" icon="edit" onPress={() => setEditing(true)}>
               Edit card
             </Button>
           </View>
           <T variant="caption" color="nightMuted" center>
             This card stays on this device. It works with no internet.
           </T>
-        </View>
+          </View>
+        </Glass>
       </ScrollView>
 
       <Sheet open={editing} onClose={() => setEditing(false)} title="Your emergency card">

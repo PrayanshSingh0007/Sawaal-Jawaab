@@ -29,8 +29,10 @@ export default function More() {
   }
 
   return (
-    <Screen bottomInset={TAB_BAR_HEIGHT}>
-      <TopBar title="More" onBack={() => router.replace('/(tabs)')} backLabel="Back to Ask" />
+    <Screen
+      bottomInset={TAB_BAR_HEIGHT}
+      header={<TopBar title="More" onBack={() => router.replace('/(tabs)')} backLabel="Back to Ask" />}
+    >
       <View style={{ gap: space[5] }}>
         <Group title="Get ready">
           <LinkRow

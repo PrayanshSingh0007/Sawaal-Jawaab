@@ -10,30 +10,46 @@ export interface GlassProps {
   radius?: number
   /** Denser glass for surfaces carrying a lot of reading text. */
   dense?: boolean
+  /** For the emergency surface, where the ground is near-black. */
+  tint?: 'light' | 'dark'
   style?: object
 }
 
 /**
  * Liquid glass.
  *
- * Three things together read as glass rather than as a blur: the blur itself,
- * a light tint with real depth from top to bottom, and a specular rim where
- * light catches the curved edge. On the web that rim is a masked gradient
- * border; here it is a hairline gradient laid over the top edge, which reads
- * the same at these radii.
+ * Four things together read as a pane of glass rather than a blur:
  *
- * Used only on things that float above the page — never on content, and never
- * stacked on other glass. In high contrast it becomes a plain surface with a
- * hard border, and the optics go entirely.
+ *   the blur itself;
+ *   a saturation lift, so colour blooms through from behind;
+ *   a gradient through the body, because glass is not evenly lit — it is
+ *     brightest where the light enters and dimmest at the far edge;
+ *   and light caught on the edges: a hard specular line along the top where
+ *     the surface turns, and a softer bounce along the bottom where light
+ *     reflects back up off whatever the pane is resting above.
+ *
+ * That last pair is what gives it thickness. Without them a blurred rectangle
+ * reads as a filter over the page; with them it reads as an object sitting on
+ * top of it.
+ *
+ * Used only on things that float — never on content, and never stacked on
+ * other glass. In high contrast it becomes a plain surface with a hard border
+ * and every optical trick is dropped.
  */
-export function Glass({ children, radius = 32, dense, style }: GlassProps) {
+export function Glass({ children, radius = 32, dense, tint = 'light', style }: GlassProps) {
   const { settings } = useApp()
+  const dark = tint === 'dark'
 
   if (settings.highContrast) {
     return (
       <View
         style={[
-          { borderRadius: radius, backgroundColor: color.surface, borderWidth: 2, borderColor: color.ink },
+          {
+            borderRadius: radius,
+            backgroundColor: color.surface,
+            borderWidth: 2,
+            borderColor: color.ink,
+          },
           style,
         ]}
       >
@@ -43,25 +59,63 @@ export function Glass({ children, radius = 32, dense, style }: GlassProps) {
   }
 
   return (
-    <View style={[{ borderRadius: radius, overflow: 'hidden', boxShadow: shadow.e2 }, style]}>
-      <BlurView intensity={dense ? 60 : 42} tint="light" style={StyleSheet.absoluteFill} />
-      <LinearGradient
-        colors={
-          dense
-            ? ['rgba(252,251,249,0.94)', 'rgba(246,244,240,0.88)']
-            : [color.glassEdge, color.glass, color.glassDeep]
-        }
-        locations={dense ? [0, 1] : [0, 0.52, 1]}
+    <View
+      style={[
+        {
+          borderRadius: radius,
+          overflow: 'hidden',
+          boxShadow: dark ? '0 18px 40px -20px rgba(0,0,0,0.75)' : shadow.e2,
+        },
+        style,
+      ]}
+    >
+      <BlurView
+        intensity={dense ? 60 : 42}
+        tint={dark ? 'dark' : 'light'}
         style={StyleSheet.absoluteFill}
       />
-      {/* The specular rim: light catching the top edge, fading as it wraps. */}
+
+      {/* The body of the pane: brightest where the light enters. */}
       <LinearGradient
-        colors={['rgba(255,255,255,0.98)', 'rgba(255,255,255,0.28)', 'rgba(255,255,255,0)']}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
+        colors={
+          dark
+            ? ['rgba(52,46,38,0.70)', 'rgba(30,27,22,0.58)', 'rgba(23,21,15,0.50)']
+            : dense
+              ? ['rgba(252,251,249,0.94)', 'rgba(248,246,243,0.90)', 'rgba(244,242,238,0.88)']
+              : [color.glassEdge, color.glass, color.glassDeep]
+        }
+        locations={[0, 0.52, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Specular line along the top edge, where the surface turns to meet the
+          light. Brightest at the corner the light comes from. */}
+      <LinearGradient
+        colors={
+          dark
+            ? ['rgba(255,255,255,0.42)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0)']
+            : ['rgba(255,255,255,0.98)', 'rgba(255,255,255,0.30)', 'rgba(255,255,255,0)']
+        }
+        start={{ x: 0.08, y: 0 }}
+        end={{ x: 0.92, y: 0 }}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1.5 }}
         pointerEvents="none"
       />
+
+      {/* Light bouncing back up off whatever the pane rests above. Softer, and
+          it fades the other way. */}
+      <LinearGradient
+        colors={
+          dark
+            ? ['rgba(255,255,255,0)', 'rgba(255,255,255,0.10)']
+            : ['rgba(255,255,255,0)', 'rgba(255,255,255,0.55)']
+        }
+        start={{ x: 0.9, y: 0 }}
+        end={{ x: 0.1, y: 0 }}
+        style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1 }}
+        pointerEvents="none"
+      />
+
       {children}
     </View>
   )
