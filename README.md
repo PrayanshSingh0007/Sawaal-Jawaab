@@ -47,11 +47,15 @@ to the asker depends on setup:
 | --- | --- | --- |
 | Hand the phone over, tap **Reply here** | Yes | nothing |
 | Scan the code, read the question, write a reply | Yes | nothing |
-| That reply appearing on the asker's phone | No | Supabase (see below) |
+| That reply appearing on the asker's phone | Yes | Supabase (see below) |
 
-Without a shared transport the reply page says so plainly and turns itself
-into the useful thing instead — the reply, large and plain, to turn around.
-It never claims to have delivered something it hasn't.
+The round trip is wired and verified: a reply written on the phone that
+scanned the code reaches the phone that asked, and that phone moves straight
+to it — no refresh, no tapping about.
+
+Build it without Supabase and nothing breaks. The reply page notices there is
+nothing to deliver through, says so rather than pretending, and turns itself
+into the useful thing instead: the reply, large and plain, to turn around.
 
 ### Run the app
 
