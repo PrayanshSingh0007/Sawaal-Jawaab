@@ -38,7 +38,7 @@ const RATES: Record<Speed, number> = { slow: 0.7, normal: 1, fast: 1.25 }
  */
 export default function Show() {
   const { say, hush, announce, elevation, reduceMotion, t } = useApp()
-  const { question, registerHandoff, receiveReply, markShown } = useFlow()
+  const { question, registerHandoff, receiveReply, markShown, reply: incoming } = useFlow()
   const [speed, setSpeed] = useState<Speed>('normal')
   const [speaking, setSpeaking] = useState(false)
   const [replying, setReplying] = useState(false)
@@ -69,6 +69,12 @@ export default function Show() {
     return () => hush()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  /* A reply landing — whether typed here or sent from the phone that scanned
+     the code — moves the person straight to it. */
+  useEffect(() => {
+    if (incoming) router.replace('/understand')
+  }, [incoming])
 
   useEffect(() => {
     if (!speaking) return
@@ -222,7 +228,6 @@ export default function Show() {
               setReply('')
               void recordReply(record.id, text)
               void receiveReply(text)
-              router.push('/understand')
             }}
           >
             Send reply

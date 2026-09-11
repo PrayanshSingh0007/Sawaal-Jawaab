@@ -23,7 +23,7 @@ const RATES: Record<Speed, number> = { slow: 0.7, normal: 1, fast: 1.25 }
  */
 export function Show() {
   const { canSpeak, say, hush, announce, settings } = useApp()
-  const { question, registerHandoff, receiveReply, markShown } = useFlow()
+  const { question, registerHandoff, receiveReply, markShown, reply: incoming } = useFlow()
   const { go, back } = useNavigator()
   const [speed, setSpeed] = useState<Speed>('normal')
   const [speaking, setSpeaking] = useState(false)
@@ -47,6 +47,12 @@ export function Show() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  /* A reply landing — whether typed here or sent from the phone that scanned
+     the code — moves the person straight to it. */
+  useEffect(() => {
+    if (incoming) go('understand', null, { replace: true })
+  }, [incoming, go])
+
   useEffect(() => {
     if (!speaking) return
     const t = window.setInterval(() => {
@@ -68,7 +74,6 @@ export function Show() {
   const onReply = async (text: string) => {
     setReplying(false)
     await receiveReply(text)
-    go('understand')
   }
 
   return (
