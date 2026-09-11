@@ -15,6 +15,15 @@ Ask it any way you like. It becomes one clear sentence. Your phone turns into a
 card the other person can read. Their reply comes back in plain words, with the
 one thing you have to do next at the top.
 
+
+<p align="center">
+  <img src="docs/03-home.png"       width="31%" alt="Home: How can I help you ask?" />
+  <img src="docs/05-show.png"       width="31%" alt="Show: the question, large, with a code to scan" />
+  <img src="docs/06-understand.png" width="31%" alt="Understand: the reply, with the one thing to do at the top" />
+</p>
+
+<p align="center"><em>Ask it roughly · show it big · get the answer back in plain words</em></p>
+
 ---
 
 ## Two surfaces, and why both
@@ -94,6 +103,20 @@ Worth saying out loud: **the question never reaches the server.** It travels
 inside the QR link and nowhere else.
 
 ---
+
+---
+
+## Every screen
+
+| | | |
+| --- | --- | --- |
+| <img src="docs/01-welcome.png" width="210" alt="Welcome" /> | <img src="docs/02-how-do-you-talk.png" width="210" alt="How do you talk" /> | <img src="docs/04-polish.png" width="210" alt="Polish" /> |
+| **Welcome** — a door, not a landing page | **How do you talk** — type, speak, or tap pictures | **Polish** — short, polite or urgent, and honest about where the words came from |
+| <img src="docs/07-packs.png" width="210" alt="Situation packs" /> | <img src="docs/08-symbols.png" width="210" alt="Symbol board" /> | <img src="docs/09-emergency.png" width="210" alt="Emergency card" /> |
+| **Packs** — 120 phrases for the places people actually go, all offline | **Pictures** — build a question without writing a word | **Emergency card** — maximum contrast, no red. Help, not danger |
+| <img src="docs/10-reply-page.png" width="210" alt="The reply page a stranger opens" /> | | |
+| **What the stranger sees** — a plain web page, no app, no account | | |
+
 
 ## The one rule that shaped the engineering
 
