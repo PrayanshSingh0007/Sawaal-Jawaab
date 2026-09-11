@@ -44,20 +44,43 @@ function decode(token: string): string {
   return new TextDecoder().decode(bytes)
 }
 
+/**
+ * The payload carried in the link: the id and the question, separated by a
+ * pipe. Deliberately not JSON — the braces and quotes cost about nineteen
+ * characters, which is a whole QR version denser for no benefit. A question
+ * containing a pipe still survives, because only the first one is a separator.
+ */
+function pack(h: Handoff): string {
+  return encode(`${h.id}|${h.question}`)
+}
+
 /** The URL printed into the QR code. Carries the question, so it opens offline-first. */
 export function handoffLink(h: Handoff): string {
-  const payload = encode(JSON.stringify({ i: h.id, q: h.question }))
-  return `${location.origin}${location.pathname}#/reply/${payload}`
+  return `${location.origin}${location.pathname}#/reply/${pack(h)}`
 }
 
 export function companionLink(h: Handoff): string {
-  const payload = encode(JSON.stringify({ i: h.id, q: h.question }))
-  return `${location.origin}${location.pathname}#/companion/${payload}`
+  return `${location.origin}${location.pathname}#/companion/${pack(h)}`
 }
 
 export function readLink(payload: string): { id: string; question: string } | null {
+  let raw: string
   try {
-    const parsed = JSON.parse(decode(payload)) as { i?: string; q?: string }
+    raw = decode(payload)
+  } catch {
+    return null
+  }
+
+  const split = raw.indexOf('|')
+  if (split > 0) {
+    const id = raw.slice(0, split)
+    const question = raw.slice(split + 1)
+    return question ? { id, question } : null
+  }
+
+  // Links made before the compact format still open.
+  try {
+    const parsed = JSON.parse(raw) as { i?: string; q?: string }
     if (!parsed.i || typeof parsed.q !== 'string') return null
     return { id: parsed.i, question: parsed.q }
   } catch {

@@ -11,7 +11,7 @@ import { Icon } from './Icon'
  * It points at the web reply page, never at this app — the person replying is
  * a stranger at a counter and must not have to install anything.
  */
-export function QRCard({ value, size = 96 }: { value: string; size?: number }) {
+export function QRCard({ value, size = 128 }: { value: string; size?: number }) {
   const { elevation } = useApp()
   return (
     <View

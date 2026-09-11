@@ -8,7 +8,7 @@ export interface QRCardProps {
 }
 
 /** A real, scannable code sitting in a clean white well. */
-export function QRCard({ value, caption = 'Scan to reply', size = 96 }: QRCardProps) {
+export function QRCard({ value, caption = 'Scan to reply', size = 124 }: QRCardProps) {
   return (
     <div className="show__qr">
       <div className="qrwell">

@@ -55,15 +55,23 @@ function toBase64Url(input: string): string {
   return out
 }
 
+/**
+ * The payload carried in the link: the id and the question, separated by a
+ * pipe. Deliberately not JSON — the braces and quotes cost about nineteen
+ * characters, which is a whole QR version denser for no benefit. A question
+ * containing a pipe still survives, because only the first one is a separator.
+ */
+function pack(handoff: Handoff): string {
+  return toBase64Url(`${handoff.id}|${handoff.question}`)
+}
+
 /** The URL printed into the QR code — a plain web page, no install needed. */
 export function handoffLink(handoff: Handoff): string {
-  const payload = toBase64Url(JSON.stringify({ i: handoff.id, q: handoff.question }))
-  return `${COUNTER_URL}/#/reply/${payload}`
+  return `${COUNTER_URL}/#/reply/${pack(handoff)}`
 }
 
 export function companionLink(handoff: Handoff): string {
-  const payload = toBase64Url(JSON.stringify({ i: handoff.id, q: handoff.question }))
-  return `${COUNTER_URL}/#/companion/${payload}`
+  return `${COUNTER_URL}/#/companion/${pack(handoff)}`
 }
 
 /* ── Records ───────────────────────────────────────────────────────────── */
