@@ -1,0 +1,918 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   COMPONENTS — one library, used everywhere. Nothing styled twice.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Surfaces ─────────────────────────────────────────────────────────── */
+.card {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--r-card);
+  box-shadow: var(--e1), var(--rim);
+  padding: var(--s6);
+}
+.card--flat { box-shadow: none; border: 1px solid var(--hairline); }
+.card--lift { box-shadow: var(--e2), var(--rim); }
+.card--tile { border-radius: var(--r-tile); padding: var(--s5); }
+
+/* ── Liquid glass ─────────────────────────────────────────────────────────
+   Three things together read as real glass: the blur, a saturation lift so
+   colour blooms through from behind, and a specular rim where light catches
+   the curved edge. The moving highlight is what makes it feel liquid rather
+   than frosted.
+
+   Used only on things that float above the page — never on content, and never
+   stacked on top of other glass. */
+.glass,
+.liquid {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(
+    180deg,
+    var(--glass-edge) 0%,
+    var(--glass) 52%,
+    var(--glass-deep) 100%
+  );
+  backdrop-filter: blur(28px) saturate(1.8) brightness(1.06);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.06);
+  box-shadow:
+    var(--e2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -12px 24px -16px rgba(255, 255, 255, 0.8);
+}
+
+/* Content sits above both light layers. */
+.glass > *,
+.liquid > * { position: relative; z-index: 1; }
+
+/* The specular rim: a hairline gradient border, bright where the light lands
+   at the top-left, gone across the middle, returning as a soft bounce at the
+   far edge. Drawn with a mask so it follows any radius. */
+.glass::before,
+.liquid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  padding: 1.25px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 255, 255, 0.34) 22%,
+    rgba(255, 255, 255, 0) 46%,
+    rgba(255, 255, 255, 0.16) 68%,
+    rgba(255, 255, 255, 0.74) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* The light that moves across the surface. `--lx`/`--ly` are set from the
+   pointer on devices that have one; everything else keeps the resting pose. */
+.glass::after,
+.liquid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    150px 100px at var(--lx, 26%) var(--ly, -14%),
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0) 72%
+  );
+  opacity: var(--sheen, 0.6);
+  transition: opacity 320ms var(--ease);
+  pointer-events: none;
+}
+
+/* Denser variant for surfaces that carry a lot of reading text. */
+.liquid--dense {
+  background: linear-gradient(
+    180deg,
+    rgba(252, 251, 249, 0.94) 0%,
+    rgba(246, 244, 240, 0.88) 100%
+  );
+  backdrop-filter: blur(32px) saturate(1.6);
+  -webkit-backdrop-filter: blur(32px) saturate(1.6);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .liquid { background: var(--canvas-lift); }
+  .liquid--dense { background: var(--surface); }
+}
+
+/* Some people find translucency hard to read through. If they have said so at
+   the system level, the glass becomes a plain surface — the layout is
+   untouched, only the optics go. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .liquid,
+  .liquid--dense {
+    background: var(--canvas-lift);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .glass::after,
+  .liquid::after { display: none; }
+  .scrim {
+    background: rgba(26, 23, 20, 0.55);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* High contrast keeps the shape and drops every optical effect. */
+html[data-contrast='high'] .glass,
+html[data-contrast='high'] .liquid,
+html[data-contrast='high'] .liquid--dense {
+  background: var(--surface);
+  box-shadow: 0 0 0 2px var(--hairline);
+}
+html[data-contrast='high'] .glass::before,
+html[data-contrast='high'] .glass::after,
+html[data-contrast='high'] .liquid::before,
+html[data-contrast='high'] .liquid::after { display: none; }
+
+.hairline { border-top: 1px solid var(--hairline); }
+
+/* ── Hero panel ───────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-sheet);
+  padding: var(--s7) var(--s6) var(--s6);
+  background: linear-gradient(158deg, var(--surface) 0%, var(--canvas-lift) 62%, #efece7 100%);
+  box-shadow: var(--e2), var(--rim);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: -40% 40% 55% -30%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), transparent);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  right: -70px;
+  top: -70px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--accent-glow), transparent 72%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+html[data-contrast='high'] .hero::after { display: none; }
+.hero > * { position: relative; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────
+   Every button is a physical object: raised at rest, sunk when pressed.    */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s3);
+  max-width: 100%;
+  min-height: var(--tap);
+  padding: 0.85em 1.5em;
+  border: 0;
+  border-radius: var(--r-pill);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: break-word;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t-press) var(--ease), box-shadow var(--t-press) var(--ease),
+    background-color var(--t-press) var(--ease), color var(--t-press) var(--ease);
+}
+/* A disabled control looks inert and pressed-in rather than a faded version of
+   itself — the physical metaphor stays honest, and nothing relies on opacity. */
+.btn:disabled {
+  cursor: not-allowed;
+  background: var(--surface-sunk);
+  background-image: none;
+  color: var(--ink-2);
+  box-shadow: var(--sunk);
+  filter: none;
+}
+.iconbtn:disabled {
+  cursor: not-allowed;
+  background: var(--surface-sunk);
+  background-image: none;
+  color: var(--ink-2);
+  box-shadow: var(--sunk);
+}
+.btn:not(:disabled):active { transform: scale(0.97); }
+
+.btn--dark {
+  background: var(--pill-dark);
+  color: #f7f4f0;
+  box-shadow: 0 12px 24px -12px rgba(26, 23, 20, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.btn--dark:not(:disabled):hover { background: #171512; }
+.btn--dark:not(:disabled):active { box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.45); }
+
+.btn--accent {
+  /* The light end of this gradient is capped so white text stays above 3:1
+     everywhere on the surface; the label is 700 to qualify as large text. */
+  background: linear-gradient(168deg, #f26a34, var(--accent) 46%, var(--accent-deep));
+  color: #fff;
+  font-weight: 700;
+  box-shadow: var(--e-hot);
+}
+.btn--accent:not(:disabled):hover { filter: saturate(1.06) brightness(1.03); }
+.btn--accent:not(:disabled):active {
+  box-shadow: inset 3px 3px 9px rgba(120, 40, 12, 0.5), inset -2px -2px 8px rgba(255, 255, 255, 0.25);
+}
+
+.btn--ghost {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--e1), var(--rim);
+}
+.btn--ghost:not(:disabled):hover { background: #fff; }
+.btn--ghost:not(:disabled):active { box-shadow: var(--sunk); }
+
+.btn--quiet {
+  background: transparent;
+  color: var(--ink-2);
+  box-shadow: none;
+  font-weight: 500;
+}
+.btn--quiet:not(:disabled):hover { background: rgba(26, 23, 20, 0.05); color: var(--ink); }
+
+.btn--block { width: 100%; }
+.btn--lg { min-height: 68px; font-size: var(--fs-h2); font-weight: 700; padding: 0.8em 1.6em; }
+.btn--sm { min-height: 44px; padding: 0.5em 1.1em; font-size: var(--fs-label); }
+.btn__icon { flex: none; }
+
+/* Circular icon button — always paired with a visible or SR label. */
+.iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--e1), var(--rim);
+  transition: transform var(--t-press) var(--ease), box-shadow var(--t-press) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.iconbtn:active { transform: scale(0.94); box-shadow: var(--sunk); }
+.iconbtn--accent {
+  background: linear-gradient(168deg, #f8764a, var(--accent) 55%, var(--accent-deep));
+  color: #fff;
+  box-shadow: var(--e-hot);
+}
+.iconbtn--sunk { background: var(--surface-sunk); box-shadow: var(--sunk); }
+
+/* ── Tag ──────────────────────────────────────────────────────────────── */
+.tag {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  background: var(--surface-sunk);
+  color: var(--ink-2);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.tag--accent { background: var(--accent-soft); color: var(--accent-ink); }
+.tag--ok { background: rgba(63, 125, 88, 0.14); color: var(--ok); }
+.tag--outline { background: transparent; box-shadow: inset 0 0 0 1px var(--hairline); }
+/* Long action summaries wrap rather than pushing the page sideways. */
+.tag--wrap { white-space: normal; text-align: left; }
+.tag__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+
+/* ── Top bar ──────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-height: 68px;
+  margin: 0 calc(var(--s5) * -1);
+  padding: var(--s3) var(--s5);
+  background: linear-gradient(var(--canvas) 55%, rgba(237, 234, 229, 0));
+}
+@media (min-width: 768px) {
+  .topbar { margin: 0 calc(var(--s7) * -1); padding: var(--s4) var(--s7); }
+}
+@media (min-width: 940px) {
+  .topbar {
+    top: var(--s3);
+    margin: calc(var(--s5) * -1) calc(var(--s7) * -1) 0;
+    padding: var(--s4) var(--s7) var(--s3);
+    background: linear-gradient(#fbfaf7 62%, rgba(251, 250, 247, 0));
+    border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  }
+}
+.topbar__title { font-size: var(--fs-h2); font-weight: 600; letter-spacing: -0.015em; }
+.topbar__spacer { flex: 1; }
+
+/* ── Bottom tab bar ───────────────────────────────────────────────────── */
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--s4) + var(--safe-b));
+  z-index: 50;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  width: min(calc(100% - 32px), 420px);
+  padding: 6px;
+  border-radius: var(--r-pill);
+  /* The centring translate lives in its own custom property so the entry
+     animation can compose with it instead of overwriting it. */
+  transform: translateX(-50%);
+}
+
+/* The active destination is one pill that flows to where you are going,
+   rather than four that blink on and off. */
+.tabbar__pill {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  z-index: 0;
+  width: var(--pill-w, 0px);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--e1), var(--rim);
+  transform: translate3d(var(--pill-x, 0px), 0, 0);
+  transition: transform 460ms var(--ease), width 460ms var(--ease);
+  pointer-events: none;
+}
+.tabbar__pill[data-ready='false'] { opacity: 0; transition: none; }
+html[data-contrast='high'] .tabbar__pill { background: #000; box-shadow: none; }
+.tab {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: var(--tap);
+  padding: 6px 2px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--t-press) var(--ease), background-color 200ms var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.tab:hover { color: var(--ink); }
+.tab[aria-current='page'] { color: var(--ink); }
+html[data-contrast='high'] .tab[aria-current='page'] { color: #fff; }
+html[data-contrast='high'] .tab[aria-current='page'] .tab__ico { color: #fff; }
+.tab[aria-current='page'] .tab__ico { color: var(--accent-ink); }
+.tab__label { line-height: 1; }
+
+/* ── Input well ───────────────────────────────────────────────────────── */
+.well {
+  position: relative;
+  border-radius: var(--r-tile);
+  background: var(--surface-sunk);
+  box-shadow: var(--sunk);
+  padding: var(--s4) var(--s5);
+  transition: box-shadow 200ms var(--ease);
+}
+.well:focus-within { box-shadow: var(--sunk), 0 0 0 3px var(--accent-glow); }
+.well__input,
+.well textarea,
+.well input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink);
+  resize: none;
+}
+.well__input::placeholder { color: var(--ink-2); font-weight: 400; }
+.well__input:focus { outline: none; }
+
+.searchfield {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-height: var(--tap);
+  padding: 0 var(--s5);
+  border-radius: var(--r-pill);
+  background: var(--surface-sunk);
+  box-shadow: var(--sunk);
+  transition: box-shadow 200ms var(--ease);
+}
+.searchfield:focus-within { box-shadow: var(--sunk), 0 0 0 3px var(--accent-glow); }
+.searchfield input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  color: var(--ink);
+}
+.searchfield input:focus { outline: none; }
+.searchfield input::placeholder { color: var(--ink-2); }
+
+.field {
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s3) var(--s4);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: var(--surface-sunk);
+  box-shadow: var(--sunk);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  color: var(--ink);
+}
+.field::placeholder { color: var(--ink-2); }
+
+/* ── Segmented control ────────────────────────────────────────────────── */
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 5px;
+  border-radius: var(--r-pill);
+  background: var(--surface-sunk);
+  box-shadow: var(--sunk);
+}
+.segmented--block { width: 100%; }
+.seg {
+  /* Segments keep their words whole: at large text sizes they wrap onto a
+     second row rather than truncating. */
+  flex: 1 1 auto;
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  min-height: 48px;
+  padding: 0.55em 0.8em;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--t-press) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.seg:hover { color: var(--ink); }
+.seg[aria-pressed='true'],
+.seg[aria-selected='true'] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--e1), var(--rim);
+}
+.seg[aria-pressed='true'] .seg__ico { color: var(--accent-ink); }
+
+/* ── Mic ──────────────────────────────────────────────────────────────── */
+.mic {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(168deg, #f8764a, var(--accent) 52%, var(--accent-deep));
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: var(--e-hot);
+  transition: transform var(--t-press) var(--ease), box-shadow var(--t-press) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.mic:active { transform: scale(0.96); }
+.mic[data-recording='true'] { box-shadow: 0 0 0 0 var(--accent-glow), var(--e-hot); }
+.mic__ring {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  pointer-events: none;
+}
+.mic[data-recording='true'] .mic__ring { animation: breathe 2.6s var(--ease) infinite; }
+@keyframes breathe {
+  0% { transform: scale(0.92); opacity: 0.55; }
+  55% { transform: scale(1.16); opacity: 0; }
+  100% { transform: scale(1.16); opacity: 0; }
+}
+
+/* ── Waveform ─────────────────────────────────────────────────────────── */
+.wave { display: flex; align-items: center; gap: 3px; height: 34px; }
+.wave__bar {
+  width: 4px;
+  min-height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.85;
+  transition: height 90ms linear;
+}
+.wave--idle .wave__bar { background: var(--ink-3); opacity: 0.5; }
+
+/* ── Choice card (Type / Speak / Tap pictures) ────────────────────────── */
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--s5);
+  width: 100%;
+  padding: var(--s5);
+  border: 0;
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--e1), var(--rim);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink);
+  transition: transform var(--t-press) var(--ease), box-shadow var(--t-press) var(--ease),
+    background-color 200ms var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.choice:active { transform: scale(0.985); box-shadow: var(--sunk); }
+.choice[aria-pressed='true'],
+.choice[data-selected='true'] {
+  background: linear-gradient(160deg, #fff, var(--accent-soft) 190%);
+  box-shadow: var(--e2), inset 0 0 0 2px var(--accent);
+}
+.choice__ico {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  flex: none;
+  border-radius: var(--r-tile);
+  background: var(--canvas-lift);
+  box-shadow: var(--sunk);
+  color: var(--ink-2);
+}
+.choice[data-selected='true'] .choice__ico {
+  background: linear-gradient(168deg, #f8764a, var(--accent) 55%, var(--accent-deep));
+  color: #fff;
+  box-shadow: var(--e-hot);
+}
+.choice__title { font-size: var(--fs-h2); font-weight: 600; letter-spacing: -0.01em; }
+.choice__sub { font-size: var(--fs-label); font-weight: 400; color: var(--ink-2); margin-top: 2px; }
+.choice__check { margin-left: auto; flex: none; color: var(--accent-ink); }
+
+/* ── Phrase card ──────────────────────────────────────────────────────── */
+.phrase {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  width: 100%;
+  padding: var(--s5);
+  border: 0;
+  border-radius: var(--r-tile);
+  background: var(--surface);
+  box-shadow: var(--e1), var(--rim);
+  font-family: inherit;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform var(--t-press) var(--ease), box-shadow var(--t-press) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.phrase:hover { background: #fff; }
+.phrase:active { transform: scale(0.985); box-shadow: var(--sunk); }
+.phrase__text {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+.phrase__meta { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s2); flex-wrap: wrap; }
+.phrase__go {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--canvas-lift);
+  color: var(--accent-ink);
+  box-shadow: var(--e1);
+}
+.phrase:hover .phrase__go { background: var(--accent-soft); }
+
+/* ── Symbol tile ──────────────────────────────────────────────────────── */
+.symbol {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  min-width: 88px;
+  min-height: 88px;
+  aspect-ratio: 1;
+  padding: var(--s3) 6px;
+  border: 0;
+  border-radius: var(--r-tile);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--e1), var(--rim);
+  transition: transform var(--t-press) var(--ease), box-shadow var(--t-press) var(--ease),
+    background-color var(--t-press) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.symbol:active { transform: scale(0.95); box-shadow: var(--sunk); }
+.symbol__ico { color: var(--ink-2); transition: color var(--t-press) var(--ease); }
+.symbol__label { line-height: 1.15; text-align: center; }
+.symbol[data-selected='true'] {
+  background: linear-gradient(160deg, #fff, var(--accent-soft));
+  box-shadow: var(--e2), inset 0 0 0 2px var(--accent);
+}
+.symbol[data-selected='true'] .symbol__ico { color: var(--accent-ink); }
+.symbol__count {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  display: grid;
+  place-items: center;
+}
+
+/* ── Action chip ──────────────────────────────────────────────────────── */
+.actionchip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s4);
+  padding: var(--s5);
+  border-radius: var(--r-card);
+  background: linear-gradient(160deg, #fff6f0, var(--accent-soft));
+  box-shadow: var(--e2), inset 0 0 0 1.5px rgba(242, 98, 46, 0.35);
+}
+.actionchip__ico {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  background: linear-gradient(168deg, #f8764a, var(--accent) 55%, var(--accent-deep));
+  color: #fff;
+  box-shadow: 0 6px 14px -6px var(--accent-glow);
+}
+.actionchip__label {
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+.actionchip__text {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  margin-top: 3px;
+}
+
+/* ── Bottom sheet ─────────────────────────────────────────────────────── */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(26, 23, 20, 0.34);
+  backdrop-filter: blur(4px) saturate(0.9);
+  -webkit-backdrop-filter: blur(4px) saturate(0.9);
+  animation: fade-in 200ms var(--ease) both;
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: 91;
+  width: min(100%, 560px);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: var(--s5) var(--s5) calc(var(--s6) + var(--safe-b));
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  box-shadow: var(--e3), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  animation: sheet-in 320ms var(--ease) both;
+}
+@keyframes sheet-in { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+.sheet__grip {
+  width: 44px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--ink-3);
+  opacity: 0.42;
+  margin: 0 auto var(--s5);
+}
+@media (min-width: 768px) {
+  .sheet { bottom: var(--s7); border-radius: var(--r-sheet); }
+  @keyframes sheet-in {
+    from { transform: translate(-50%, 24px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+  }
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--s4);
+  padding: var(--s8) var(--s5);
+}
+.empty__ico {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: var(--r-card);
+  background: var(--canvas-lift);
+  box-shadow: var(--sunk);
+  color: var(--ink-2);
+}
+
+/* ── Toggle ───────────────────────────────────────────────────────────── */
+.setting {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s4) var(--s5);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+}
+.setting + .setting { border-top: 1px solid var(--hairline); }
+.setting__title { font-size: var(--fs-body); font-weight: 600; }
+.setting__sub { font-size: var(--fs-label); color: var(--ink-2); margin-top: 2px; line-height: 1.4; }
+.switch {
+  position: relative;
+  width: 58px;
+  height: 34px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  box-shadow: var(--sunk);
+  transition: background-color 200ms var(--ease);
+}
+.setting[aria-checked='true'] .switch { background: var(--accent); box-shadow: none; }
+.switch__knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 2px 6px rgba(120, 104, 92, 0.4);
+  display: grid;
+  place-items: center;
+  color: var(--accent-ink);
+  transition: transform 220ms var(--ease);
+}
+.setting[aria-checked='true'] .switch__knob { transform: translateX(24px); }
+
+/* ── Banner / inline notice ───────────────────────────────────────────── */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  padding: var(--s4) var(--s5);
+  border-radius: var(--r-tile);
+  background: var(--canvas-lift);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  font-size: var(--fs-label);
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.banner__ico { flex: none; margin-top: 1px; color: var(--ink-2); }
+.banner--accent {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  box-shadow: inset 0 0 0 1px rgba(242, 98, 46, 0.28);
+}
+.banner--accent .banner__ico { color: var(--accent-ink); }
+
+/* ── AI disclosure ────────────────────────────────────────────────────── */
+.ainote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+/* ── Skeleton ─────────────────────────────────────────────────────────── */
+.skel {
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--surface-sunk), var(--canvas-lift), var(--surface-sunk));
+  background-size: 220% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { from { background-position: 140% 0; } to { background-position: -40% 0; } }
+
+/* ── Toast ────────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--nav-h) + var(--safe-b) + var(--s5));
+  transform: translateX(-50%);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  max-width: calc(100% - 32px);
+  padding: var(--s3) var(--s5);
+  border-radius: var(--r-pill);
+  background: var(--pill-dark);
+  color: #f7f4f0;
+  font-size: var(--fs-label);
+  font-weight: 500;
+  box-shadow: var(--e3);
+  animation: toast-in 260ms var(--ease) both;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ── Long-press indicator ─────────────────────────────────────────────── */
+.holdring {
+  position: fixed;
+  z-index: 200;
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  pointer-events: none;
+  color: var(--accent);
+}
+
+.holdring circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 226;
+  stroke-dashoffset: 226;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  animation: hold 850ms linear forwards;
+}
+.holdring rect { fill: rgba(255, 255, 255, 0.6); }
+@keyframes hold { to { stroke-dashoffset: 0; } }

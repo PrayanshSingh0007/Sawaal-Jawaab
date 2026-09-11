@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Sawaal Jawaab",
+    "slug": "sawaal-jawaab",
+    "version": "1.0.0",
+    "scheme": "sawaaljawaab",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#EDEAE5"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sawaaljawaab.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Sawaal Jawaab uses the microphone so you can say your question out loud instead of typing it.",
+        "NSSpeechRecognitionUsageDescription": "Sawaal Jawaab turns what you say into a written question you can show someone.",
+        "NSLocationWhenInUseUsageDescription": "Sawaal Jawaab can show your location on your emergency card, so someone helping you knows where you are.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.sawaaljawaab.app",
+      "adaptiveIcon": { "backgroundColor": "#EDEAE5" },
+      "permissions": ["RECORD_AUDIO", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
+      "edgeToEdgeEnabled": true
+    },
+    "web": { "bundler": "metro", "output": "single" },
+    "plugins": ["expo-router", "expo-font", "expo-splash-screen"],
+    "experiments": { "typedRoutes": true }
+  }
+}
