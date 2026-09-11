@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur'
 import { LinearGradient } from 'expo-linear-gradient'
-import { StyleSheet, View } from 'react-native'
+import { Platform, StyleSheet, View } from 'react-native'
 import type { ReactNode } from 'react'
 import { color, shadow } from '../theme/tokens'
 import { useApp } from '../state/AppState'
@@ -35,7 +35,16 @@ export interface GlassProps {
  * Used only on things that float — never on content, and never stacked on
  * other glass. In high contrast it becomes a plain surface with a hard border
  * and every optical trick is dropped.
+ *
+ * On Android there is no blur. `expo-blur` defaults `blurMethod` to 'none'
+ * there, which renders a plain semi-transparent view, and the alternative
+ * needs a `blurTarget` plumbed through every call site and still degrades on
+ * SDK 30 and below. Translucency without blur is not glass — it is text
+ * showing through text. So Android gets a near-opaque frosted panel instead,
+ * keeping the same gradient body and the same specular edges. It reads as a
+ * solid pane of frosted glass rather than as a broken one.
  */
+const CAN_BLUR = Platform.OS !== 'android'
 export function Glass({ children, radius = 32, dense, tint = 'light', style }: GlassProps) {
   const { settings } = useApp()
   const dark = tint === 'dark'
@@ -69,19 +78,26 @@ export function Glass({ children, radius = 32, dense, tint = 'light', style }: G
         style,
       ]}
     >
-      <BlurView
-        intensity={dense ? 60 : 42}
-        tint={dark ? 'dark' : 'light'}
-        style={StyleSheet.absoluteFill}
-      />
+      {CAN_BLUR ? (
+        <BlurView
+          intensity={dense ? 60 : 42}
+          tint={dark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
 
-      {/* The body of the pane: brightest where the light enters. */}
+      {/* The body of the pane: brightest where the light enters. Opaque enough
+          on Android to stand in for the blur that is not there. */}
       <LinearGradient
         colors={
           dark
-            ? ['rgba(52,46,38,0.70)', 'rgba(30,27,22,0.58)', 'rgba(23,21,15,0.50)']
-            : dense
-              ? ['rgba(252,251,249,0.94)', 'rgba(248,246,243,0.90)', 'rgba(244,242,238,0.88)']
+            ? CAN_BLUR
+              ? ['rgba(52,46,38,0.70)', 'rgba(30,27,22,0.58)', 'rgba(23,21,15,0.50)']
+              : ['rgba(48,43,35,0.97)', 'rgba(32,29,23,0.96)', 'rgba(25,23,17,0.95)']
+            : dense || !CAN_BLUR
+              ? CAN_BLUR
+                ? ['rgba(252,251,249,0.94)', 'rgba(248,246,243,0.90)', 'rgba(244,242,238,0.88)']
+                : ['rgba(252,251,249,0.98)', 'rgba(248,246,243,0.97)', 'rgba(243,241,237,0.96)']
               : [color.glassEdge, color.glass, color.glassDeep]
         }
         locations={[0, 0.52, 1]}

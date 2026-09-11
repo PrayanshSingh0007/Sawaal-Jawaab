@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur'
 import { LinearGradient } from 'expo-linear-gradient'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { useApp } from '../state/AppState'
 
 const STEPS = 6
@@ -18,7 +18,12 @@ const STEPS = 6
  * steps is enough that the seams disappear.
  *
  * Purely decorative and never interactive — content passes underneath it.
+ *
+ * Android has no blur to ramp (see Glass), so it gets the gradient alone —
+ * which still does the real job here: content fades out as it travels up
+ * behind the header rather than sliding under a hard line.
  */
+const CAN_BLUR = Platform.OS !== 'android'
 export function ProgressiveBlur({
   height,
   intensity = 48,
@@ -45,7 +50,7 @@ export function ProgressiveBlur({
         ...(from === 'top' ? { top: 0 } : { bottom: 0 }),
       }}
     >
-      {Array.from({ length: STEPS }, (_, i) => {
+      {(CAN_BLUR ? Array.from({ length: STEPS }, (_, i) => i) : []).map((i) => {
         // Strongest at the named edge, gone by the far one.
         const depth = from === 'top' ? STEPS - i : i + 1
         return (
@@ -60,7 +65,9 @@ export function ProgressiveBlur({
       <LinearGradient
         colors={
           from === 'top'
-            ? ['rgba(237,234,229,0.92)', 'rgba(237,234,229,0.55)', 'rgba(237,234,229,0)']
+            ? CAN_BLUR
+              ? ['rgba(237,234,229,0.92)', 'rgba(237,234,229,0.55)', 'rgba(237,234,229,0)']
+              : ['rgba(237,234,229,0.99)', 'rgba(237,234,229,0.88)', 'rgba(237,234,229,0)']
             : ['rgba(237,234,229,0)', 'rgba(237,234,229,0.55)', 'rgba(237,234,229,0.92)']
         }
         locations={[0, 0.55, 1]}

@@ -151,7 +151,7 @@ prompts, the 120 phrases, the symbols and every type. Only the edges differ:
 | Reading aloud | `speechSynthesis` | `expo-speech` |
 | Dictation | Web Speech API | needs a dev build; degrades to typing |
 | QR | `qrcode.react` | `react-native-qrcode-svg` |
-| Glass | `backdrop-filter` | `expo-blur` |
+| Glass | `backdrop-filter` | `expo-blur` on iOS; an opaque frosted panel on Android, which has no blur |
 | Ground & gradients | CSS radial gradients | `react-native-svg` + `expo-linear-gradient` |
 | Elevation | CSS `box-shadow` | RN `boxShadow` (New Architecture) |
 | Haptics | — | `expo-haptics` |
