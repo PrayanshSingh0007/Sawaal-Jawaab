@@ -17,6 +17,52 @@ one thing you have to do next at the top.
 
 ---
 
+## Submitting this
+
+Everything below is live and verified right now.
+
+| | |
+| --- | --- |
+| Repo | https://github.com/PrayanshSingh0007/Sawaal-Jawaab |
+| Reply page (what the QR opens) | https://prayanshsingh0007.github.io/Sawaal-Jawaab/ |
+| Database | Supabase `Sawaal Jawaab`, ap-south-1 |
+
+**To demo the app on your phone**
+
+```bash
+cd mobile && npx expo start
+```
+
+Scan the terminal QR with **Expo Go**. Phone and laptop on the same Wi-Fi.
+
+**To hand in an installable APK**
+
+```bash
+cd mobile
+npx eas login          # your Expo account
+npx eas init           # writes the project id into app.json
+npx eas build -p android --profile preview
+```
+
+Builds in the cloud — no Android Studio, no Java. Returns a download link.
+Credentials are already in `eas.json`, so there is nothing else to configure.
+
+**The 90-second demo**
+
+1. Type something rough — `where submit medical report`.
+2. **Continue** → three versions appear, written on-device.
+3. Pick one → **Show this**. The phone becomes the card.
+4. Scan the code with any other phone. The question opens in a browser — no app, no account.
+5. Type a reply there, send it. **The asker's phone moves to the answer on its own**, with the one thing to do at the top: `Counter 4 · Before 2 PM · Bring Aadhaar card`.
+6. Turn off Wi-Fi and do steps 1–3 again. Everything still works.
+
+**Worth saying out loud to a judge:** the question never reaches the server. It
+travels inside the QR link and nowhere else, so the database cannot know what
+anyone asked. Row level security is on with no policies at all — `select *`
+returns nothing.
+
+---
+
 ## Two surfaces, one product
 
 ```

@@ -205,7 +205,11 @@ async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T | nu
       body: JSON.stringify(args),
     })
     if (!res.ok) return null
-    return (await res.json()) as T
+    // A void function answers 204 with an empty body; asking that for JSON
+    // throws, and the row was created perfectly well.
+    if (res.status === 204) return null
+    const text = await res.text()
+    return text ? (JSON.parse(text) as T) : null
   } catch {
     // The on-device path still carries the flow.
     return null
