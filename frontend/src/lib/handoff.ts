@@ -134,7 +134,10 @@ function pruneExpired(): void {
 export function newHandoff(question: string): Handoff {
   const now = Date.now()
   const h: Handoff = {
-    id: newId(8),
+    // With no sign-in anywhere, this id is the whole capability: holding it is
+    // what proves you were shown the code. Long enough that guessing one
+    // inside its hour is not a thing anybody can do.
+    id: newId(12),
     question,
     createdAt: now,
     expiresAt: now + TTL_MS,
