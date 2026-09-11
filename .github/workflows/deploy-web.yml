@@ -37,6 +37,14 @@ jobs:
         working-directory: frontend
       - run: npm run build
         working-directory: frontend
+        env:
+          # Optional. With them, a reply can travel back from another phone;
+          # without them the build still works and the page says so plainly.
+          # The anon key is a public value by design — it ships inside the
+          # bundle either way — so this is about keeping it out of the repo and
+          # making it rotatable, not about hiding it.
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -3,3 +3,6 @@ dist
 .env
 .DS_Store
 *.tsbuildinfo
+
+# Supabase CLI scratch — holds the linked project ref and pooler settings.
+supabase/.temp/

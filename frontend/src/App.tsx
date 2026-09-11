@@ -46,8 +46,11 @@ function ScreenPlaceholder() {
 /** Screens that keep the main navigation visible. */
 const WITH_TABS = new Set(['home', 'packs', 'pack', 'history', 'more', 'understand', 'settings'])
 
-/** Screens the other person sees. They never get the app's own chrome. */
-const GUEST = new Set(['reply', 'companion'])
+/** Screens the other person sees. They never get the app's own chrome.
+ *  `r` and `c` are the canonical short forms — every character saved in the
+ *  link is a less dense QR code to scan across a counter. The long names
+ *  remain so older links keep opening. */
+const GUEST = new Set(['r', 'c', 'reply', 'companion'])
 
 function Screens() {
   const { route } = useNavigator()
@@ -112,8 +115,10 @@ function Screens() {
         return <More onEmergency={openEmergency} />
       case 'settings':
         return <Settings />
+      case 'c':
       case 'companion':
         return <Companion payload={route.param} />
+      case 'r':
       case 'reply':
         return <Counter payload={route.param} />
       case 'home':

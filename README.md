@@ -47,7 +47,7 @@ to the asker depends on setup:
 | --- | --- | --- |
 | Hand the phone over, tap **Reply here** | Yes | nothing |
 | Scan the code, read the question, write a reply | Yes | nothing |
-| That reply appearing on the asker's phone | No | Supabase (SQL below) |
+| That reply appearing on the asker's phone | No | Supabase (see below) |
 
 Without a shared transport the reply page says so plainly and turns itself
 into the useful thing instead — the reply, large and plain, to turn around.
@@ -267,20 +267,41 @@ runs. `VITE_AI_MODEL` overrides the model (default `claude-sonnet-4-6`; set it
 to `claude-sonnet-5` for the current Sonnet). For production, replace the dev
 middleware with an equivalent server route.
 
-**`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`** — enables cross-device QR
-handoff and Companion links. Without them, handoff works on-device: hand the
-phone over and tap **Reply here**, which is the everyday case anyway.
+**Supabase** — lets a reply travel back from another phone. Without it,
+handoff works on-device: hand the phone over and tap **Reply here**.
 
-```sql
-create table handoffs (
-  id          text primary key,
-  question    text not null,
-  reply       text,
-  suggestion  text,
-  expires_at  timestamptz not null,
-  created_at  timestamptz default now()
-);
+```bash
+supabase link --project-ref <your-ref>
+supabase db push                 # applies supabase/migrations/
 ```
+
+Then set the values in three places:
+
+| Where | Keys |
+| --- | --- |
+| `frontend/.env` | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
+| `mobile/.env` | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` |
+| GitHub repo secrets | `SUPABASE_URL`, `SUPABASE_ANON_KEY` (for the Pages build) |
+
+Use the **anon** key, never the service-role key. The anon key is a public
+value by design — it ships inside every client bundle — which is exactly why
+the schema is built so that holding it grants nothing on its own.
+
+### How the schema protects the questions
+
+Two decisions, both in `supabase/migrations/`:
+
+**The question never reaches the server.** It travels inside the QR link and
+nowhere else. A row holds an id, whatever reply comes back, and an expiry — so
+the database cannot know what anyone asked. These are questions asked in
+hospitals and police stations.
+
+**The table is unreachable.** Row level security is on with *no policies*, so
+`anon` cannot read or write a single row and `select *` returns nothing. Every
+operation goes through a `security definer` function that demands the exact
+handoff id. With no sign-in anywhere in this product that id *is* the
+capability — 12 characters from a 31-symbol alphabet, alive for an hour — and
+because no endpoint lists rows, there is nothing to enumerate.
 
 ---
 
