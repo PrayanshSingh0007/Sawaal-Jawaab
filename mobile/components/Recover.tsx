@@ -1,8 +1,4 @@
-import { View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { color } from '../theme/tokens'
-import { T } from './Type'
-import { Icon } from './Icon'
+import { Pressable, Text, View } from 'react-native'
 
 /**
  * What the person sees if something in the app breaks.
@@ -11,59 +7,50 @@ import { Icon } from './Icon'
  * counter needing to ask a question. So this says what happened in plain
  * words, says what still works, and offers the one button that fixes it.
  *
- * Deliberately built from nothing — plain views, system text, literal colours,
- * no context, no fonts, no tokens. Whatever failed, this still renders.
+ * It is built from nothing — plain views, system text, literal colours. No
+ * context, no theme, no fonts, no icons. It renders *outside* the providers,
+ * because whatever failed may be one of them, and a recovery screen that needs
+ * the thing that broke is not a recovery screen.
  */
 export function Recover({ onRetry }: { onRetry: () => void }) {
-  const insets = useSafeAreaInsets()
   return (
     <View
       style={{
         flex: 1,
         backgroundColor: '#EDEAE5',
-        paddingHorizontal: 20,
-        paddingTop: insets.top + 24,
-        paddingBottom: insets.bottom + 24,
+        paddingHorizontal: 24,
+        paddingVertical: 64,
         justifyContent: 'center',
         gap: 20,
       }}
     >
-      <View
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: 24,
-          backgroundColor: '#FCE3D5',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+      <Text
+        accessibilityRole="header"
+        style={{ fontSize: 32, fontWeight: '600', color: '#1A1714', lineHeight: 38 }}
       >
-        <Icon name="hint" size={32} color="#A83C0E" />
-      </View>
+        Something went wrong here
+      </Text>
 
-      <T variant="display">Something went wrong here</T>
-      <T variant="body" color="muted">
-        Your questions, your phrases and your emergency card are all still saved
-        on this phone. Nothing has been lost.
-      </T>
+      <Text style={{ fontSize: 17, lineHeight: 26, color: '#6B645C' }}>
+        Your questions, your phrases and your emergency card are all still saved on this phone.
+        Nothing has been lost.
+      </Text>
 
-      <View
-        style={{
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Start again"
+        onPress={onRetry}
+        style={({ pressed }) => ({
           minHeight: 56,
           borderRadius: 999,
-          backgroundColor: color.pillDark,
           alignItems: 'center',
           justifyContent: 'center',
           paddingHorizontal: 24,
-        }}
-        onTouchEnd={onRetry}
-        accessibilityRole="button"
-        accessibilityLabel="Start again"
+          backgroundColor: pressed ? '#171512' : '#24211E',
+        })}
       >
-        <T variant="body" style={{ color: '#F7F4F0', fontFamily: 'Inter_700Bold' }}>
-          Start again
-        </T>
-      </View>
+        <Text style={{ fontSize: 17, fontWeight: '700', color: '#F7F4F0' }}>Start again</Text>
+      </Pressable>
     </View>
   )
 }

@@ -27,11 +27,9 @@ void SplashScreen.preventAutoHideAsync()
  * broke and offers a way back.
  */
 export function ErrorBoundary({ retry }: { error: Error; retry: () => Promise<void> }) {
-  return (
-    <SafeAreaProvider>
-      <Recover onRetry={() => void retry()} />
-    </SafeAreaProvider>
-  )
+  // No providers: this renders in place of the tree that just failed, so it
+  // must not depend on anything inside it.
+  return <Recover onRetry={() => void retry()} />
 }
 
 function Shell() {

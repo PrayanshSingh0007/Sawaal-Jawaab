@@ -153,29 +153,31 @@ export function watchHandoff(
     subscription.remove()
   }
 
+  /* The loop is never torn down while backgrounded — only the network call is
+     skipped. Cancelling the timer instead would mean polling could resume only
+     if an 'active' event arrived, and a single missed event would silently
+     leave the person waiting forever for a reply that had already been sent.
+     A timer ticking every few seconds costs nothing next to that. */
   const tick = async () => {
     if (stopped) return
     if (expiresAt && Date.now() > expiresAt) return stop()
 
-    const remote = await pull(id)
-    if (remote) {
-      onUpdate(remote)
-      // The reply is the thing we were waiting for. Nothing left to ask about.
-      if (remote.reply) return stop()
+    if (AppState.currentState === 'active') {
+      const remote = await pull(id)
+      if (remote) {
+        onUpdate(remote)
+        // The reply is the thing we were waiting for. Nothing left to ask about.
+        if (remote.reply) return stop()
+      }
+      delay = Math.min(Math.round(delay * 1.3), 8000)
     }
-    delay = Math.min(Math.round(delay * 1.3), 8000)
+
     if (!stopped) timer = setTimeout(tick, delay)
   }
 
+  // Coming back to the app should feel immediate, so the backoff resets.
   const subscription = AppState.addEventListener('change', (state) => {
-    if (stopped) return
-    if (state === 'active') {
-      delay = 1200
-      if (!timer) timer = setTimeout(tick, delay)
-    } else if (timer) {
-      clearTimeout(timer)
-      timer = null
-    }
+    if (!stopped && state === 'active') delay = 1200
   })
 
   timer = setTimeout(tick, delay)
