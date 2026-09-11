@@ -42,6 +42,35 @@ cd mobile && npm install && npx expo start
 Scan the QR with **Expo Go** on your phone. No Xcode or Android Studio needed.
 For a real `.apk` / `.ipa`, use `eas build` — it compiles in the cloud.
 
+### Build an installable APK
+
+One-time, because a build has to belong to an Expo account:
+
+```bash
+cd mobile
+npx eas login        # free account
+npx eas init         # writes the project id into app.json
+```
+
+Then, any time:
+
+```bash
+npx eas build -p android --profile preview
+```
+
+It compiles in the cloud — no Android Studio, no Java, nothing installed
+locally — and hands back a download link for a `.apk` you can send to anyone.
+
+| Profile | Output | For |
+| --- | --- | --- |
+| `preview` | `.apk` | The one you want. Sideload it, share the link. |
+| `development` | `.apk` + dev client | Needed to add native modules such as dictation. |
+| `production` | `.aab` | Play Store upload. |
+
+iOS is set up too, but the `preview` profile builds for the **simulator**,
+which needs Xcode; a build that runs on a real iPhone needs a paid Apple
+Developer account. On this machine, Android is the practical route.
+
 ### Run the web page
 
 ```bash
@@ -304,6 +333,19 @@ icon library, and never an icon without a label.
 
 ---
 
+## Icons
+
+`mobile/assets/` is generated, not hand-drawn — `icon.png`, `adaptive-icon.png`,
+`splash-icon.png` and `favicon.png` all come from the same 40-unit mark the app
+draws at runtime, so they cannot drift apart.
+
+The one deliberate inversion: inside the app the ground is warm ceramic and the
+accent is reserved for controls, but a beige icon disappears against most
+wallpapers. The home-screen icon is therefore the accent carrying the whole
+tile, with the mark in cream — lit from the top-left, like everything else.
+
+---
+
 ## Mobile architecture
 
 ```
@@ -337,6 +379,14 @@ express. NativeWind is wired up (babel preset, `global.css`, the palette in
 - **Dictation needs a development build.** Expo Go does not bundle a speech-to-
   text module, so the app reports it unavailable and offers typing and the
   picture board — the same graceful path the web takes in a browser without
-  recognition. Add `@react-native-voice/voice` and implement `startDictation`
-  in `lib/speech.ts` to switch it on.
+  recognition. To switch it on:
+
+  ```bash
+  npx expo install expo-dev-client @react-native-voice/voice
+  npx eas build -p android --profile development
+  ```
+
+  then implement `startDictation` in `lib/speech.ts` against it and flip
+  `dictationAvailable()`. Every call site already handles both answers, so
+  nothing else changes.
 - **The QR points at the web, never at the app**, for the reason above.
