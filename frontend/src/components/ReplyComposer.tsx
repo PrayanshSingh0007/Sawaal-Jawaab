@@ -7,6 +7,9 @@ export interface ReplyComposerProps {
   placeholder?: string
   sendLabel?: string
   autoFocus?: boolean
+  /** What happens to the reply. Differs when handing the phone over versus
+   *  replying on your own phone after scanning. */
+  note?: string
 }
 
 /**
@@ -19,6 +22,7 @@ export function ReplyComposer({
   placeholder = 'Type your reply here',
   sendLabel = 'Send reply',
   autoFocus,
+  note = 'Your reply appears on their screen in large, plain words.',
 }: ReplyComposerProps) {
   const [text, setText] = useState('')
   const ready = text.trim().length > 0
@@ -51,7 +55,7 @@ export function ReplyComposer({
       </Button>
       <p className="caption dim row gap2" style={{ justifyContent: 'center' }}>
         <Icon name="info" size={14} />
-        Your reply appears on their screen in large, plain words.
+        {note}
       </p>
     </form>
   )

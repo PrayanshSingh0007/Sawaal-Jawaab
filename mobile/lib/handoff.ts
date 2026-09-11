@@ -2,8 +2,9 @@
  * Handoff — passing a question to another person and getting a reply back.
  *
  * The person replying must never have to install anything, so the QR code
- * points at the web counter page rather than at this app. Set
- * `EXPO_PUBLIC_COUNTER_URL` to wherever `frontend/` is deployed.
+ * points at the web counter page rather than at this app. `frontend/` is
+ * deployed to GitHub Pages by .github/workflows/deploy-web.yml; point
+ * `EXPO_PUBLIC_COUNTER_URL` somewhere else to override it.
  *
  * Two transports, chosen automatically:
  *
@@ -21,7 +22,14 @@ import type { Handoff } from './types'
 
 const TTL_MS = 60 * 60 * 1000 // 60 minutes
 
-const COUNTER_URL = (process.env['EXPO_PUBLIC_COUNTER_URL'] ?? '').replace(/\/+$/, '')
+/** Where `frontend/` is published. A real, reachable page — a code that opens
+ *  nothing is worse than no code at all. */
+const DEFAULT_COUNTER_URL = 'https://prayanshsingh0007.github.io/Sawaal-Jawaab'
+
+const COUNTER_URL = (process.env['EXPO_PUBLIC_COUNTER_URL'] || DEFAULT_COUNTER_URL).replace(
+  /\/+$/,
+  '',
+)
 const SUPABASE_URL = process.env['EXPO_PUBLIC_SUPABASE_URL'] ?? ''
 const SUPABASE_KEY = process.env['EXPO_PUBLIC_SUPABASE_ANON_KEY'] ?? ''
 
@@ -50,14 +58,12 @@ function toBase64Url(input: string): string {
 /** The URL printed into the QR code — a plain web page, no install needed. */
 export function handoffLink(handoff: Handoff): string {
   const payload = toBase64Url(JSON.stringify({ i: handoff.id, q: handoff.question }))
-  const base = COUNTER_URL || 'https://sawaal-jawaab.app'
-  return `${base}/#/reply/${payload}`
+  return `${COUNTER_URL}/#/reply/${payload}`
 }
 
 export function companionLink(handoff: Handoff): string {
   const payload = toBase64Url(JSON.stringify({ i: handoff.id, q: handoff.question }))
-  const base = COUNTER_URL || 'https://sawaal-jawaab.app'
-  return `${base}/#/companion/${payload}`
+  return `${COUNTER_URL}/#/companion/${payload}`
 }
 
 /* ── Records ───────────────────────────────────────────────────────────── */

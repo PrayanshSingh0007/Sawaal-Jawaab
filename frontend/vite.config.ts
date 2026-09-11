@@ -49,6 +49,11 @@ function anthropicProxy(): Plugin {
 }
 
 export default defineConfig({
+  // Relative asset URLs, so the built page works wherever it is served from —
+  // a domain root, a GitHub Pages sub-path, or a folder on a USB stick. The
+  // app uses hash routing for the same reason: the person scanning the code
+  // must land on the question, never on a 404.
+  base: './',
   plugins: [react(), anthropicProxy()],
   resolve: { alias: { '@': path.resolve(process.cwd(), 'src') } },
   server: { port: 5173 },
