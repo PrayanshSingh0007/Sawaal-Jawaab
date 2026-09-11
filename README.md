@@ -33,6 +33,26 @@ at a hospital counter cannot install an app in order to reply to you, so the
 reply and family-helper views have to be a plain web page that works in
 seconds with no account. It doubles as the browser demo.
 
+It is live at **https://prayanshsingh0007.github.io/Sawaal-Jawaab/** and
+redeploys on every push to `main`. That URL is where the app's QR codes
+point; set `EXPO_PUBLIC_COUNTER_URL` to send them somewhere else.
+
+### What the QR can and cannot do
+
+Scanning opens the question on the other person's phone and lets them write a
+reply — no app, no account, a few seconds. Whether that reply travels **back**
+to the asker depends on setup:
+
+| | Works today | Needs |
+| --- | --- | --- |
+| Hand the phone over, tap **Reply here** | Yes | nothing |
+| Scan the code, read the question, write a reply | Yes | nothing |
+| That reply appearing on the asker's phone | No | Supabase (SQL below) |
+
+Without a shared transport the reply page says so plainly and turns itself
+into the useful thing instead — the reply, large and plain, to turn around.
+It never claims to have delivered something it hasn't.
+
 ### Run the app
 
 ```bash
