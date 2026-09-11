@@ -126,8 +126,12 @@ function pruneExpired(): void {
   }
 }
 
-export function createHandoff(question: string): Handoff {
-  pruneExpired()
+/**
+ * Builds a handoff. Pure: no storage, no network — the Show screen needs an id
+ * during its first render so the code is on screen immediately, and a render
+ * is not a place to have effects.
+ */
+export function newHandoff(question: string): Handoff {
   const now = Date.now()
   const h: Handoff = {
     id: newId(8),
@@ -137,8 +141,20 @@ export function createHandoff(question: string): Handoff {
     reply: null,
     suggestion: null,
   }
+  return h
+}
+
+/** Records it and, where there is a shared transport, opens a row for a reply. */
+export function persistHandoff(h: Handoff): void {
+  pruneExpired()
   writeRecord(h)
   void mirror(h)
+}
+
+/** Both steps at once, for callers already inside an event handler. */
+export function createHandoff(question: string): Handoff {
+  const h = newHandoff(question)
+  persistHandoff(h)
   return h
 }
 
@@ -196,6 +212,7 @@ export interface Watcher {
 export function watchHandoff(
   id: string,
   onUpdate: (patch: { reply?: string; suggestion?: string }) => void,
+  expiresAt?: number,
 ): Watcher {
   const onMessage = (e: MessageEvent) => {
     const d = e.data as { kind?: string; id?: string; reply?: string; suggestion?: string }
@@ -224,16 +241,30 @@ export function watchHandoff(
 
   const tick = async () => {
     if (stopped) return
+    if (expiresAt && Date.now() > expiresAt) return stop()
+
     if (document.visibilityState === 'visible') {
       const remote = await pull(id)
-      if (remote) onUpdate(remote)
+      if (remote) {
+        onUpdate(remote)
+        // The reply is the thing we were waiting for.
+        if (remote.reply) return stop()
+      }
     }
     delay = Math.min(Math.round(delay * 1.3), 8000)
-    timer = window.setTimeout(tick, delay)
+    if (!stopped) timer = window.setTimeout(tick, delay)
   }
 
   const onVisible = () => {
     if (document.visibilityState === 'visible') delay = 1200
+  }
+
+  function stop() {
+    stopped = true
+    channel?.removeEventListener('message', onMessage)
+    window.removeEventListener('storage', onStorage)
+    document.removeEventListener('visibilitychange', onVisible)
+    if (timer) clearTimeout(timer)
   }
 
   if (sharedTransportAvailable) {
@@ -241,15 +272,7 @@ export function watchHandoff(
     document.addEventListener('visibilitychange', onVisible)
   }
 
-  return {
-    stop: () => {
-      stopped = true
-      channel?.removeEventListener('message', onMessage)
-      window.removeEventListener('storage', onStorage)
-      document.removeEventListener('visibilitychange', onVisible)
-      if (timer) clearTimeout(timer)
-    },
-  }
+  return { stop }
 }
 
 /* ── Optional shared transport ───────────────────────────────────────────

@@ -596,3 +596,12 @@ html[data-contrast='high'] .emergency { background: #000; background-image: none
   margin: 0 auto;
   padding: calc(var(--s7) + env(safe-area-inset-top, 0px)) var(--s5) calc(var(--s6) + var(--safe-b));
 }
+
+/* A code for a long question needs a finer grid, and past a point it stops
+   fitting beside its caption. It takes the whole row rather than shrinking
+   into something a camera cannot read. */
+.show__qr[data-stack='true'] {
+  flex-direction: column;
+  text-align: center;
+}
+.show__qr[data-stack='true'] .grow { flex: none; }

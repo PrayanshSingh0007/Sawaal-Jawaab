@@ -176,13 +176,18 @@ export function FlowProvider({ children }: { children: ReactNode }) {
 
   /* A reply arriving from the other person's device. */
   useEffect(() => {
-    if (!handoff) return
-    const watcher = watchHandoff(handoff.id, (patch) => {
-      if (patch.reply) void receiveReplyRef.current(patch.reply)
-      if (patch.suggestion) setSuggestion(patch.suggestion)
-    })
+    // Nothing to wait for once the reply is here.
+    if (!handoff || reply) return
+    const watcher = watchHandoff(
+      handoff.id,
+      (patch) => {
+        if (patch.reply) void receiveReplyRef.current(patch.reply)
+        if (patch.suggestion) setSuggestion(patch.suggestion)
+      },
+      handoff.expiresAt,
+    )
     return () => watcher.stop()
-  }, [handoff])
+  }, [handoff, reply])
 
   /* One exchange per question, written only once it has been shown. */
   useEffect(() => {

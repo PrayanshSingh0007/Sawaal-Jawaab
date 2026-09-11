@@ -34,6 +34,24 @@ async function writeJson(key: string, value: unknown): Promise<void> {
   }
 }
 
+/**
+ * Lists here are stored whole, so a save is read-modify-write. Two of those
+ * overlapping — a question being recorded while its reply arrives — would read
+ * the same array twice and the second write would erase the first. Mutations
+ * queue behind one another instead.
+ */
+let writeQueue: Promise<unknown> = Promise.resolve()
+
+function serialise<T>(work: () => Promise<T>): Promise<T> {
+  const next = writeQueue.then(work, work)
+  // Keep the chain alive even if one link rejects.
+  writeQueue = next.then(
+    () => undefined,
+    () => undefined,
+  )
+  return next
+}
+
 /* ── Settings ──────────────────────────────────────────────────────────── */
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -65,20 +83,24 @@ export async function listExchanges(): Promise<Exchange[]> {
   return all.sort((a, b) => b.createdAt - a.createdAt)
 }
 
-export async function saveExchange(entry: Exchange): Promise<void> {
-  const all = await readJson<Exchange[]>(K.exchanges, [])
-  const i = all.findIndex((e) => e.id === entry.id)
-  if (i >= 0) all[i] = entry
-  else all.unshift(entry)
-  await writeJson(K.exchanges, all.slice(0, 300))
+export function saveExchange(entry: Exchange): Promise<void> {
+  return serialise(async () => {
+    const all = await readJson<Exchange[]>(K.exchanges, [])
+    const i = all.findIndex((e) => e.id === entry.id)
+    if (i >= 0) all[i] = entry
+    else all.unshift(entry)
+    await writeJson(K.exchanges, all.slice(0, 300))
+  })
 }
 
-export async function deleteExchange(id: string): Promise<void> {
-  const all = await readJson<Exchange[]>(K.exchanges, [])
-  await writeJson(
-    K.exchanges,
-    all.filter((e) => e.id !== id),
-  )
+export function deleteExchange(id: string): Promise<void> {
+  return serialise(async () => {
+    const all = await readJson<Exchange[]>(K.exchanges, [])
+    await writeJson(
+      K.exchanges,
+      all.filter((e) => e.id !== id),
+    )
+  })
 }
 
 /* ── Phrases ───────────────────────────────────────────────────────────── */
@@ -88,12 +110,14 @@ export async function listPhrases(): Promise<SavedPhrase[]> {
   return all.sort((a, b) => b.uses - a.uses || b.lastUsedAt - a.lastUsedAt)
 }
 
-export async function savePhrase(phrase: SavedPhrase): Promise<void> {
-  const all = await readJson<SavedPhrase[]>(K.phrases, [])
-  const i = all.findIndex((p) => p.id === phrase.id)
-  if (i >= 0) all[i] = phrase
-  else all.push(phrase)
-  await writeJson(K.phrases, all)
+export function savePhrase(phrase: SavedPhrase): Promise<void> {
+  return serialise(async () => {
+    const all = await readJson<SavedPhrase[]>(K.phrases, [])
+    const i = all.findIndex((p) => p.id === phrase.id)
+    if (i >= 0) all[i] = phrase
+    else all.push(phrase)
+    await writeJson(K.phrases, all)
+  })
 }
 
 /* ── Emergency profile — device only, never synced ─────────────────────── */

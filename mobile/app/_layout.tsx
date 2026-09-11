@@ -16,9 +16,23 @@ import { AppProvider, useApp } from '../state/AppState'
 import { FlowProvider } from '../state/FlowState'
 import { Ground } from '../components/Ground'
 import { Toast } from '../components/Toast'
+import { Recover } from '../components/Recover'
 import '../global.css'
 
 void SplashScreen.preventAutoHideAsync()
+
+/**
+ * expo-router renders this instead of a blank screen when a route throws.
+ * A communication aid that shows nothing is worse than one that admits it
+ * broke and offers a way back.
+ */
+export function ErrorBoundary({ retry }: { error: Error; retry: () => Promise<void> }) {
+  return (
+    <SafeAreaProvider>
+      <Recover onRetry={() => void retry()} />
+    </SafeAreaProvider>
+  )
+}
 
 function Shell() {
   const { ready, toast } = useApp()

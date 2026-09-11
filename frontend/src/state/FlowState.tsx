@@ -166,14 +166,19 @@ export function FlowProvider({ children }: { children: ReactNode }) {
 
   /* Watch for a reply arriving from the other person's device. */
   useEffect(() => {
-    if (!handoff) return
-    const watcher = watchHandoff(handoff.id, (patch) => {
-      if (patch.reply) void receiveReplyRef.current?.(patch.reply)
-      if (patch.suggestion) setSuggestion(patch.suggestion)
-    })
+    // Nothing to wait for once the reply is here.
+    if (!handoff || reply) return
+    const watcher = watchHandoff(
+      handoff.id,
+      (patch) => {
+        if (patch.reply) void receiveReplyRef.current?.(patch.reply)
+        if (patch.suggestion) setSuggestion(patch.suggestion)
+      },
+      handoff.expiresAt,
+    )
     return () => watcher.stop()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handoff?.id])
+  }, [handoff?.id, reply])
 
   const receiveReply = useCallback(
     async (text: string) => {

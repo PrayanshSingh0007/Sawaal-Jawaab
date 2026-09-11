@@ -12,8 +12,9 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { color, motion, radius as R, space } from '../theme/tokens'
 import { useApp } from '../state/AppState'
 import { useFlow } from '../state/FlowState'
-import { createHandoff, handoffLink, recordReply } from '../lib/handoff'
+import { handoffLink, newHandoff, persistHandoff, recordReply } from '../lib/handoff'
 import { isSpeaking } from '../lib/speech'
+import { fitShowSize } from '../lib/fit'
 import { Screen } from '../components/Screen'
 import { Rise } from '../components/Motion'
 import { Sheen } from '../components/Sheen'
@@ -44,14 +45,18 @@ export default function Show() {
   const [replying, setReplying] = useState(false)
   const [reply, setReply] = useState('')
   const [cardWidth, setCardWidth] = useState(0)
+  // A long question steps the type down so the whole sentence stays visible
+  // and Read aloud stays reachable.
+  const shown = fitShowSize(question, t.show)
 
   // The code exists on the first frame: the record is created with the screen,
   // then handed to the flow so any reply is watched for.
-  const [record, setRecord] = useState(() => createHandoff(question))
+  const [record, setRecord] = useState(() => newHandoff(question))
   useEffect(() => {
-    if (record.question !== question) setRecord(createHandoff(question))
+    if (record.question !== question) setRecord(newHandoff(question))
   }, [question, record.question])
   useEffect(() => {
+    persistHandoff(record)
     registerHandoff(record)
   }, [record, registerHandoff])
 
@@ -137,7 +142,7 @@ export default function Show() {
             <T
               variant="show"
               accessibilityRole="header"
-              style={{ fontSize: t.show, lineHeight: Math.round(t.show * 1.12) }}
+              style={{ fontSize: shown, lineHeight: Math.round(shown * 1.14) }}
             >
               {question || 'Your question will appear here.'}
             </T>

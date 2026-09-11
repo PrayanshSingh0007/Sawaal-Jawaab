@@ -10,6 +10,7 @@ import { useFlow } from '../state/FlowState'
 import { useNavigator } from '../state/router'
 import { createHandoff, handoffLink } from '../lib/handoff'
 import { isSpeaking } from '../lib/speech'
+import { fitShowSize } from '../lib/fit'
 
 type Speed = 'slow' | 'normal' | 'fast'
 const RATES: Record<Speed, number> = { slow: 0.7, normal: 1, fast: 1.25 }
@@ -84,7 +85,11 @@ export function Show() {
       </div>
 
       <section className="show__q">
-        <h1 className="show__text" lang={settings.language}>
+        <h1
+          className="show__text"
+          lang={settings.language}
+          style={{ fontSize: `calc(var(--fs-show) * ${fitShowSize(question, 100) / 100})` }}
+        >
           {question || 'Your question will appear here.'}
         </h1>
       </section>

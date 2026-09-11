@@ -20,6 +20,7 @@
  * Nothing here ever touches the emergency profile.
  */
 
+import { AppState } from 'react-native'
 import { newId } from './id'
 import { readHandoff, writeHandoff } from './store'
 import type { Handoff } from './types'
@@ -80,7 +81,12 @@ export function companionLink(handoff: Handoff): string {
 
 /* ── Records ───────────────────────────────────────────────────────────── */
 
-export function createHandoff(question: string): Handoff {
+/**
+ * Builds a handoff. Pure: no storage, no network — the Show screen needs an id
+ * during its first render so the code is on screen immediately, and a render
+ * is not a place to have effects.
+ */
+export function newHandoff(question: string): Handoff {
   const now = Date.now()
   const handoff: Handoff = {
     // With no sign-in anywhere, this id is the whole capability: holding it is
@@ -93,8 +99,19 @@ export function createHandoff(question: string): Handoff {
     reply: null,
     suggestion: null,
   }
+  return handoff
+}
+
+/** Records it and, where there is a shared transport, opens a row for a reply. */
+export function persistHandoff(handoff: Handoff): void {
   void writeHandoff(handoff.id, handoff)
   void mirror(handoff)
+}
+
+/** Both steps at once, for callers already inside an event handler. */
+export function createHandoff(question: string): Handoff {
+  const handoff = newHandoff(question)
+  persistHandoff(handoff)
   return handoff
 }
 
@@ -117,31 +134,53 @@ export interface Watcher {
 export function watchHandoff(
   id: string,
   onUpdate: (patch: { reply?: string; suggestion?: string }) => void,
+  expiresAt?: number,
 ): Watcher {
   if (!sharedTransportAvailable) return { stop: () => undefined }
 
   /* Eager at first — someone is standing at a counter right now — then backing
-     off, so a screen left open does not sit there hammering the network. */
+     off. It stops for good once the reply is in, stops when the handoff's hour
+     is up, and sleeps while the app is in the background: a screen left open
+     should not sit there draining a battery on a question already answered. */
   let stopped = false
   let delay = 1200
-  let timer: ReturnType<typeof setTimeout>
+  let timer: ReturnType<typeof setTimeout> | null = null
+
+  const stop = () => {
+    stopped = true
+    if (timer) clearTimeout(timer)
+    timer = null
+    subscription.remove()
+  }
 
   const tick = async () => {
     if (stopped) return
+    if (expiresAt && Date.now() > expiresAt) return stop()
+
     const remote = await pull(id)
-    if (remote) onUpdate(remote)
+    if (remote) {
+      onUpdate(remote)
+      // The reply is the thing we were waiting for. Nothing left to ask about.
+      if (remote.reply) return stop()
+    }
     delay = Math.min(Math.round(delay * 1.3), 8000)
-    timer = setTimeout(tick, delay)
+    if (!stopped) timer = setTimeout(tick, delay)
   }
+
+  const subscription = AppState.addEventListener('change', (state) => {
+    if (stopped) return
+    if (state === 'active') {
+      delay = 1200
+      if (!timer) timer = setTimeout(tick, delay)
+    } else if (timer) {
+      clearTimeout(timer)
+      timer = null
+    }
+  })
 
   timer = setTimeout(tick, delay)
 
-  return {
-    stop: () => {
-      stopped = true
-      clearTimeout(timer)
-    },
-  }
+  return { stop }
 }
 
 /* ── Optional shared transport ───────────────────────────────────────────
